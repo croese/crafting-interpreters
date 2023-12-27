@@ -1,0 +1,15 @@
+# nlox
+
+```
+expression     → comma ;
+comma          → ternary-cond ( "," ternary-cond )* ;
+ternary-cond   → equality ? expression : expression ;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           → factor ( ( "-" | "+" ) factor )* ;
+factor         → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary
+                 | primary ;
+primary        → NUMBER | STRING | "true" | "false" | "nil"
+                 | "(" expression ")" ;
+```

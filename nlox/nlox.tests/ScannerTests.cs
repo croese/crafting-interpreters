@@ -36,4 +36,16 @@ lines */");
 
         Assert.True(Lox.HadError);
     }
+
+    [Theory]
+    [InlineData("?", TokenType.QUESTION, "?")]
+    [InlineData(":", TokenType.COLON, ":")]
+    public void ScanTokensRecognizesIndividualTokens(string source, TokenType expectedType, string expectedLexeme) {
+        var s = new Scanner(source);
+        var tokens = s.ScanTokens();
+
+        Assert.False(Lox.HadError);
+        Assert.Equal(expectedType, tokens[0].Type);
+        Assert.Equal(expectedLexeme, tokens[0].Lexeme);
+    }
 }

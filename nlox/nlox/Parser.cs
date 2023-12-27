@@ -19,17 +19,29 @@ public class Parser(IReadOnlyList<Token> tokens) {
     }
 
     private Expr Comma() {
-        var expr = Equality();
+        var expr = TernaryCond();
 
         while (Match(TokenType.COMMA)) {
             var op = Previous();
-            var right = Equality();
+            var right = TernaryCond();
             expr = new Binary(expr, op, right);
         }
 
         return expr;
     }
 
+    private Expr TernaryCond() {
+        var expr = Equality();
+
+        if (Match(TokenType.QUESTION)) {
+            var ifTrue = Expression();
+            Consume(TokenType.COLON, "missing ':' for ternary conditional.");
+            var ifFalse = Expression();
+            expr = new TernaryCond(expr, ifTrue, ifFalse);
+        }
+
+        return expr;
+    }
 
     private Expr Equality() {
         var expr = Comparison();

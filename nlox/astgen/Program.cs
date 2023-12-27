@@ -9,7 +9,8 @@ DefineAst(outputDir, "Expr",
     "Binary : Expr Left, Token Operator, Expr Right",
     "Grouping : Expr Expression",
     "Literal : object? Value",
-    "Unary : Token Operator, Expr Right");
+    "Unary : Token Operator, Expr Right",
+    "TernaryCond : Expr Condition, Expr IfTrue, Expr IfFalse");
 
 void DefineAst(string outputDir, string baseName, params string[] types) {
     var path = Path.Combine(outputDir, $"{baseName}.cs");

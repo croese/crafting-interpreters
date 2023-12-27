@@ -98,6 +98,12 @@ public class Scanner {
                 }
 
                 break;
+            case '?':
+                AddToken(TokenType.QUESTION);
+                break;
+            case ':':
+                AddToken(TokenType.COLON);
+                break;
             case ' ':
             case '\r':
             case '\t':

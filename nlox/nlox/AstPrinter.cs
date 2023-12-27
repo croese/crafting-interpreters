@@ -20,6 +20,10 @@ public class AstPrinter : ExprVisitor<string> {
         return Parenthesize(expr.Operator.Lexeme, expr.Right);
     }
 
+    public string VisitTernaryCondExpr(TernaryCond expr) {
+        return Parenthesize("if", expr.Condition, expr.IfTrue, expr.IfFalse);
+    }
+
     public string Print(Expr expr) {
         return expr.Accept(this);
     }
