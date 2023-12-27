@@ -1,7 +1,9 @@
 ﻿namespace nlox;
 
 public class Lox {
+    private static readonly Interpreter Interpreter = new();
     public static bool HadError { get; private set; }
+    public static bool HadRuntimeError { get; private set; }
 
     public static void Main(string[] args) {
         switch (args.Length) {
@@ -38,6 +40,10 @@ public class Lox {
         if (HadError) {
             Environment.Exit(65);
         }
+
+        if (HadRuntimeError) {
+            Environment.Exit(70);
+        }
     }
 
     private static void Run(string source) {
@@ -51,7 +57,8 @@ public class Lox {
             return;
         }
 
-        Console.WriteLine(new AstPrinter().Print(expr!));
+        //Console.WriteLine(new AstPrinter().Print(expr!));
+        Interpreter.Interpret(expr!);
     }
 
     public static void Error(int line, string message) {
@@ -73,5 +80,10 @@ public class Lox {
 
     public static void ClearError() {
         HadError = false;
+    }
+
+    public static void RuntimeError(RuntimeError error) {
+        Console.Error.WriteLine($"{error.Message}\n[line {error.Token.Line}]");
+        HadRuntimeError = true;
     }
 }

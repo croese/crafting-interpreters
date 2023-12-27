@@ -8,8 +8,7 @@ public class Parser(IReadOnlyList<Token> tokens) {
     public Expr? Parse() {
         try {
             return Expression();
-        }
-        catch (ParseError e) {
+        } catch (ParseError e) {
             return null;
         }
     }
