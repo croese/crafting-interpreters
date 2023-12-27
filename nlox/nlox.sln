@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nlox", "nlox\nlox.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nlox.tests", "nlox.tests\nlox.tests.csproj", "{97204852-9520-4342-8B45-F5FC5B918CDC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "astgen", "astgen\astgen.csproj", "{FCDC7921-56B6-4595-B658-0932910AF6BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{97204852-9520-4342-8B45-F5FC5B918CDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97204852-9520-4342-8B45-F5FC5B918CDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97204852-9520-4342-8B45-F5FC5B918CDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCDC7921-56B6-4595-B658-0932910AF6BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCDC7921-56B6-4595-B658-0932910AF6BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCDC7921-56B6-4595-B658-0932910AF6BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCDC7921-56B6-4595-B658-0932910AF6BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
