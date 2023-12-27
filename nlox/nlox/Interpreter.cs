@@ -10,20 +10,24 @@ public class Interpreter : ExprVisitor<object?> {
                 return (double)left - (double)right;
             case TokenType.SLASH:
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left / (double)right;
+                var denom = (double)right;
+                if (denom == 0) {
+                    throw new RuntimeError(expr.Operator, "denominator cannot equal zero");
+                }
+
+                return (double)left / denom;
             case TokenType.STAR:
                 CheckNumberOperands(expr.Operator, left, right);
                 return (double)left * (double)right;
             case TokenType.PLUS:
-                if (left is double ld && right is double rd) {
-                    return ld + rd;
-                }
+                return left switch {
+                    double ld when right is double rd => ld + rd,
+                    double ld when right is string rs => ld + rs,
+                    string ls when right is string rs => ls + rs,
+                    string ls when right is double rd => ls + rd,
+                    _ => throw new RuntimeError(expr.Operator, "operands must be two numbers or strings")
+                };
 
-                if (left is string ls && right is string rs) {
-                    return ls + rs;
-                }
-
-                throw new RuntimeError(expr.Operator, "operands must be two numbers or strings");
             case TokenType.GREATER:
                 CheckNumberOperands(expr.Operator, left, right);
                 return (double)left > (double)right;
