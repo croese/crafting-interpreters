@@ -1,7 +1,7 @@
 ﻿namespace nlox;
 
-internal class Lox {
-    private static bool HadError;
+public class Lox {
+    public static bool HadError { get; private set; }
 
     public static void Main(string[] args) {
         switch (args.Length) {
@@ -56,5 +56,9 @@ internal class Lox {
     public static void Report(int line, string where, string message) {
         Console.Error.WriteLine($"[line {line}] Error{where}: {message}");
         HadError = true;
+    }
+
+    public static void ClearError() {
+        HadError = false;
     }
 }

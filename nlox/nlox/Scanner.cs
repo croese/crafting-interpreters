@@ -91,6 +91,8 @@ public class Scanner {
                     while (Peek() != '\n' && !IsAtEnd()) {
                         Advance();
                     }
+                } else if (Match('*')) {
+                    BlockComment();
                 } else {
                     AddToken(TokenType.SLASH);
                 }
@@ -117,6 +119,31 @@ public class Scanner {
 
                 break;
         }
+    }
+
+    private void BlockComment() {
+        while (Peek() != '*' && PeekNext() != '/' && !IsAtEnd()) {
+            if (Peek() == '\n') {
+                _line++;
+            }
+
+            Advance();
+        }
+
+        if (IsAtEnd()) {
+            Lox.Error(_line, "unterminated block comment.");
+            return;
+        }
+
+        // eat the "*/" - make sure to check if we hit the end before reading both chars
+        Advance();
+
+        if (IsAtEnd()) {
+            Lox.Error(_line, "unterminated block comment.");
+            return;
+        }
+
+        Advance();
     }
 
     private void Identifier() {
