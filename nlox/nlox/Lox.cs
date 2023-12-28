@@ -50,6 +50,10 @@ public class Lox {
         var scanner = new Scanner(source);
         var tokens = scanner.ScanTokens();
 
+        foreach (var token in tokens) {
+            Console.WriteLine(token);
+        }
+
         var parser = new Parser(tokens);
         var expr = parser.Parse();
 
