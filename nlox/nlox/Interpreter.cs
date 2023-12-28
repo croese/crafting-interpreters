@@ -7,18 +7,18 @@ public class Interpreter : ExprVisitor<object?> {
         switch (expr.Operator.Type) {
             case TokenType.MINUS:
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left - (double)right;
+                return (double)left! - (double)right!;
             case TokenType.SLASH:
                 CheckNumberOperands(expr.Operator, left, right);
-                var denom = (double)right;
+                var denom = (double)right!;
                 if (denom == 0) {
                     throw new RuntimeError(expr.Operator, "denominator cannot equal zero");
                 }
 
-                return (double)left / denom;
+                return (double)left! / denom;
             case TokenType.STAR:
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left * (double)right;
+                return (double)left! * (double)right!;
             case TokenType.PLUS:
                 return left switch {
                     double ld when right is double rd => ld + rd,
@@ -30,18 +30,21 @@ public class Interpreter : ExprVisitor<object?> {
 
             case TokenType.GREATER:
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left > (double)right;
+                return (double)left! > (double)right!;
             case TokenType.GREATER_EQUAL:
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left >= (double)right;
+                return (double)left! >= (double)right!;
             case TokenType.LESS:
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left < (double)right;
+                return (double)left! < (double)right!;
             case TokenType.LESS_EQUAL:
                 CheckNumberOperands(expr.Operator, left, right);
-                return (double)left <= (double)right;
+                return (double)left! <= (double)right!;
             case TokenType.BANG_EQUAL: return !IsEqual(left, right);
             case TokenType.EQUAL_EQUAL: return IsEqual(left, right);
+            case TokenType.COMMA:
+                var unused = Evaluate(expr.Left);
+                return Evaluate(expr.Right);
         }
 
         return null;
