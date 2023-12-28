@@ -9,7 +9,7 @@ public class Lox {
         switch (args.Length) {
             case > 1:
                 Console.WriteLine("usage: nlox [script]");
-                Environment.Exit(64);
+                System.Environment.Exit(64);
                 break;
             case 1:
                 RunFile(args[0]);
@@ -38,11 +38,11 @@ public class Lox {
         Run(source);
 
         if (HadError) {
-            Environment.Exit(65);
+            System.Environment.Exit(65);
         }
 
         if (HadRuntimeError) {
-            Environment.Exit(70);
+            System.Environment.Exit(70);
         }
     }
 
@@ -51,14 +51,14 @@ public class Lox {
         var tokens = scanner.ScanTokens();
 
         var parser = new Parser(tokens);
-        var expr = parser.Parse();
+        var statements = parser.Parse();
 
         if (HadError) {
             return;
         }
 
         //Console.WriteLine(new AstPrinter().Print(expr!));
-        Interpreter.Interpret(expr!);
+        Interpreter.Interpret(statements!);
     }
 
     public static void Error(int line, string message) {

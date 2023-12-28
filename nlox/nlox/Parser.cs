@@ -5,12 +5,75 @@ internal class ParseError : Exception;
 public class Parser(IReadOnlyList<Token> tokens) {
     private int _current;
 
-    public Expr? Parse() {
+    public List<Stmt> Parse() {
+        var statements = new List<Stmt>();
+        while (!IsAtEnd()) {
+            var decl = Declaration();
+            if (decl != null) {
+                statements.Add(decl);
+            }
+        }
+
+        return statements;
+    }
+
+    private Stmt? Declaration() {
         try {
-            return Expression();
+            return Match(TokenType.VAR) ? VarDeclaration() : Statement();
         } catch (ParseError e) {
+            Synchronize();
             return null;
         }
+    }
+
+    private Stmt VarDeclaration() {
+        var name = Consume(TokenType.IDENTIFIER, "expect variable name");
+
+        Expr? initializer = null;
+        if (Match(TokenType.EQUAL)) {
+            initializer = Expression();
+        }
+
+        Consume(TokenType.SEMICOLON, "expect ';' after variable declaration");
+        return new Var(name, initializer);
+    }
+
+    private Stmt Statement() {
+        if (Match(TokenType.PRINT)) {
+            return PrintStatement();
+        }
+
+        if (Match(TokenType.LEFT_BRACE)) {
+            return new Block(Block());
+        }
+
+        return ExpressionStatement();
+    }
+
+    private List<Stmt> Block() {
+        var statements = new List<Stmt>();
+
+        while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd()) {
+            var decl = Declaration();
+            if (decl != null) {
+                statements.Add(decl);
+            }
+        }
+
+        Consume(TokenType.RIGHT_BRACE, "expect '}' after block");
+        return statements;
+    }
+
+    private Stmt ExpressionStatement() {
+        var value = Expression();
+        Consume(TokenType.SEMICOLON, "expect ';' after value");
+        return new Expression(value);
+    }
+
+    private Stmt PrintStatement() {
+        var value = Expression();
+        Consume(TokenType.SEMICOLON, "expect ';' after value");
+        return new Print(value);
     }
 
     private Expr Expression() {
@@ -18,12 +81,30 @@ public class Parser(IReadOnlyList<Token> tokens) {
     }
 
     private Expr Comma() {
-        var expr = TernaryCond();
+        var expr = Assignment();
 
         while (Match(TokenType.COMMA)) {
             var op = Previous();
-            var right = TernaryCond();
+            var right = Assignment();
             expr = new Binary(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    private Expr Assignment() {
+        var expr = TernaryCond();
+
+        if (Match(TokenType.EQUAL)) {
+            var equals = Previous();
+            var value = Assignment();
+
+            if (expr is Variable v) {
+                var name = v.Name;
+                return new Assign(name, value);
+            }
+
+            Error(equals, "invalid assignment target");
         }
 
         return expr;
@@ -115,6 +196,10 @@ public class Parser(IReadOnlyList<Token> tokens) {
 
         if (Match(TokenType.NUMBER, TokenType.STRING)) {
             return new Literal(Previous().Literal);
+        }
+
+        if (Match(TokenType.IDENTIFIER)) {
+            return new Variable(Previous());
         }
 
         if (Match(TokenType.LEFT_PAREN)) {

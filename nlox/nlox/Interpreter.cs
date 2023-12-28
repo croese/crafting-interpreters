@@ -1,6 +1,14 @@
 namespace nlox;
 
-public class Interpreter : ExprVisitor<object?> {
+public class Interpreter : ExprVisitor<object?>, StmtVisitor {
+    private Environment _environment = new();
+
+    public object? VisitAssignExpr(Assign expr) {
+        var value = Evaluate(expr.Value);
+        _environment.Assign(expr.Name, value);
+        return value;
+    }
+
     public object? VisitBinaryExpr(Binary expr) {
         var left = Evaluate(expr.Left);
         var right = Evaluate(expr.Right);
@@ -64,7 +72,7 @@ public class Interpreter : ExprVisitor<object?> {
         switch (expr.Operator.Type) {
             case TokenType.MINUS:
                 CheckNumberOperand(expr.Operator, right);
-                return -(double)right;
+                return -(double)right!;
             case TokenType.BANG:
                 return !IsTruthy(right);
         }
@@ -78,13 +86,58 @@ public class Interpreter : ExprVisitor<object?> {
         return IsTruthy(cond) ? Evaluate(expr.IfTrue) : Evaluate(expr.IfFalse);
     }
 
-    public void Interpret(Expr expression) {
+    public object? VisitVariableExpr(Variable expr) {
+        return _environment.Get(expr.Name);
+    }
+
+    public void VisitBlockStmt(Block stmt) {
+        ExecuteBlock(stmt.Statements, new Environment(_environment));
+    }
+
+    public void VisitExpressionStmt(Expression stmt) {
+        Evaluate(stmt.Value);
+    }
+
+    public void VisitPrintStmt(Print stmt) {
+        var value = Evaluate(stmt.Value);
+        Console.WriteLine(Stringify(value));
+    }
+
+    public void VisitVarStmt(Var stmt) {
+        object? value = null;
+        if (stmt.Initializer != null) {
+            value = Evaluate(stmt.Initializer);
+        }
+
+        _environment.Define(stmt.Name.Lexeme, value);
+    }
+
+    private void ExecuteBlock(List<Stmt> statements,
+        Environment environment) {
+        var previous = _environment;
         try {
-            var value = Evaluate(expression);
-            Console.WriteLine(Stringify(value));
+            _environment = environment;
+
+            foreach (var stmt in statements) {
+                Execute(stmt);
+            }
+        } finally {
+            _environment = previous;
+        }
+    }
+
+    public void Interpret(List<Stmt> statements) {
+        try {
+            foreach (var stmt in statements) {
+                Execute(stmt);
+            }
         } catch (RuntimeError e) {
             Lox.RuntimeError(e);
         }
+    }
+
+    private void Execute(Stmt stmt) {
+        stmt.Accept(this);
     }
 
     private string Stringify(object? value) {

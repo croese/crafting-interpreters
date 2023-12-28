@@ -3,6 +3,10 @@ using System.Text;
 namespace nlox;
 
 public class AstPrinter : ExprVisitor<string> {
+    public string VisitAssignExpr(Assign expr) {
+        throw new NotImplementedException();
+    }
+
     public string VisitBinaryExpr(Binary expr) {
         return Parenthesize(expr.Operator.Lexeme,
             expr.Left, expr.Right);
@@ -22,6 +26,10 @@ public class AstPrinter : ExprVisitor<string> {
 
     public string VisitTernaryCondExpr(TernaryCond expr) {
         return Parenthesize("if", expr.Condition, expr.IfTrue, expr.IfFalse);
+    }
+
+    public string VisitVariableExpr(Variable expr) {
+        throw new NotImplementedException();
     }
 
     public string Print(Expr expr) {
