@@ -3,6 +3,7 @@ namespace nlox;
 public class Scanner {
     private static readonly Dictionary<string, TokenType> Keywords = new() {
         { "and", TokenType.AND },
+        { "break", TokenType.BREAK },
         { "class", TokenType.CLASS },
         { "else", TokenType.ELSE },
         { "false", TokenType.FALSE },

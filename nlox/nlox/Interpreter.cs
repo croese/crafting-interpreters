@@ -1,5 +1,9 @@
 namespace nlox;
 
+public class BreakException(Token Break) : Exception {
+    public Token Break { get; } = Break;
+}
+
 public class Interpreter : ExprVisitor<object?>, StmtVisitor {
     private Environment _environment = new();
 
@@ -138,8 +142,16 @@ public class Interpreter : ExprVisitor<object?>, StmtVisitor {
 
     public void VisitWhileStmt(While stmt) {
         while (IsTruthy(Evaluate(stmt.Condition))) {
-            Execute(stmt.Body);
+            try {
+                Execute(stmt.Body);
+            } catch (BreakException b) {
+                break;
+            }
         }
+    }
+
+    public void VisitBreakStmt(Break stmt) {
+        throw new BreakException(stmt.Token);
     }
 
     private void ExecuteBlock(List<Stmt> statements,
@@ -163,6 +175,8 @@ public class Interpreter : ExprVisitor<object?>, StmtVisitor {
             }
         } catch (RuntimeError e) {
             Lox.RuntimeError(e);
+        } catch (BreakException b) {
+            Lox.Error(b.Break, "invalid 'break' used outside of loop");
         }
     }
 

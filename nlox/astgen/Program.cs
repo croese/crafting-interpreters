@@ -21,7 +21,8 @@ DefineAst(outputDir, false, "Stmt",
     "Print : Expr Value",
     "Var : Token Name, Expr? Initializer",
     "If : Expr Condition, Stmt ThenBranch, Stmt? ElseBranch",
-    "While : Expr Condition, Stmt Body");
+    "While : Expr Condition, Stmt Body",
+    "Break : Token Token");
 
 void DefineAst(string outputDir, bool isVisitorGeneric, string baseName, params string[] types) {
     var path = Path.Combine(outputDir, $"{baseName}.cs");

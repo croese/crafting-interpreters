@@ -7,6 +7,7 @@ public interface StmtVisitor {
     void VisitVarStmt(Var stmt);
     void VisitIfStmt(If stmt);
     void VisitWhileStmt(While stmt);
+    void VisitBreakStmt(Break stmt);
 }
 public abstract record Stmt {
     public abstract void Accept(StmtVisitor visitor);
@@ -39,5 +40,10 @@ public sealed record If(Expr Condition, Stmt ThenBranch, Stmt? ElseBranch) : Stm
 public sealed record While(Expr Condition, Stmt Body) : Stmt {
     public override void Accept(StmtVisitor visitor) {
         visitor.VisitWhileStmt(this);
+    }
+}
+public sealed record Break(Token Token) : Stmt {
+    public override void Accept(StmtVisitor visitor) {
+        visitor.VisitBreakStmt(this);
     }
 }

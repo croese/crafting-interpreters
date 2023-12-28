@@ -43,6 +43,12 @@ public class Parser(IReadOnlyList<Token> tokens) {
             return PrintStatement();
         }
 
+        if (Match(TokenType.BREAK)) {
+            var b = Previous();
+            Consume(TokenType.SEMICOLON, "expect ';' after 'break' keyword");
+            return new Break(b);
+        }
+
         if (Match(TokenType.LEFT_BRACE)) {
             return new Block(Block());
         }
