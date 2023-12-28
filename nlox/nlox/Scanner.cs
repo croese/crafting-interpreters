@@ -1,7 +1,7 @@
 namespace nlox;
 
 public class Scanner {
-    private static readonly Dictionary<string, TokenType> _keywords = new() {
+    private static readonly Dictionary<string, TokenType> Keywords = new() {
         { "and", TokenType.AND },
         { "class", TokenType.CLASS },
         { "else", TokenType.ELSE },
@@ -23,8 +23,10 @@ public class Scanner {
     private readonly string _source;
     private readonly List<Token> _tokens = new();
     private int _current; // index of char currently being considered
+    private int _currentColumn = 1;
     private int _line = 1;
     private int _start; // index of first char of lexeme being scanned
+    private int _startColumn;
 
     public Scanner(string source) {
         _source = source;
@@ -33,11 +35,12 @@ public class Scanner {
     public List<Token> ScanTokens() {
         while (!IsAtEnd()) {
             _start = _current;
+            _startColumn = _currentColumn;
             ScanToken();
         }
 
         _tokens.Add(new Token(TokenType.EOF, string.Empty,
-            null, _line));
+            null, _line, _currentColumn));
         return _tokens;
     }
 
@@ -110,6 +113,7 @@ public class Scanner {
                 break;
             case '\n':
                 _line++;
+                _currentColumn = 1;
                 break;
             case '"':
                 String();
@@ -158,7 +162,7 @@ public class Scanner {
         }
 
         var text = _source.Substring(_start, _current - _start);
-        var type = _keywords.GetValueOrDefault(text, TokenType.IDENTIFIER);
+        var type = Keywords.GetValueOrDefault(text, TokenType.IDENTIFIER);
 
         AddToken(type);
     }
@@ -217,7 +221,7 @@ public class Scanner {
 
     private void AddToken(TokenType type, object? literal) {
         var text = _source.Substring(_start, _current - _start);
-        _tokens.Add(new Token(type, text, literal, _line));
+        _tokens.Add(new Token(type, text, literal, _line, _startColumn));
     }
 
     private bool IsAtEnd() {
@@ -225,6 +229,7 @@ public class Scanner {
     }
 
     private char Advance() {
+        _currentColumn++;
         return _source[_current++];
     }
 
