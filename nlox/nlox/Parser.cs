@@ -47,7 +47,84 @@ public class Parser(IReadOnlyList<Token> tokens) {
             return new Block(Block());
         }
 
+        if (Match(TokenType.IF)) {
+            return IfStatement();
+        }
+
+        if (Match(TokenType.WHILE)) {
+            return WhileStatement();
+        }
+
+        if (Match(TokenType.FOR)) {
+            return ForStatement();
+        }
+
         return ExpressionStatement();
+    }
+
+    private Stmt ForStatement() {
+        Consume(TokenType.LEFT_PAREN, "expect '(' after 'for'");
+        Stmt? initializer;
+        if (Match(TokenType.SEMICOLON)) {
+            initializer = null;
+        } else if (Match(TokenType.VAR)) {
+            initializer = VarDeclaration();
+        } else {
+            initializer = ExpressionStatement();
+        }
+
+        Expr? condition = null;
+        if (!Check(TokenType.SEMICOLON)) {
+            condition = Expression();
+        }
+
+        Consume(TokenType.SEMICOLON, "expect ';' after loop condition");
+
+        Expr? increment = null;
+        if (!Check(TokenType.RIGHT_PAREN)) {
+            increment = Expression();
+        }
+
+        Consume(TokenType.RIGHT_PAREN, "expect ')' after 'for' clauses");
+
+        var body = Statement();
+
+        if (increment != null) {
+            body = new Block([body, new Expression(increment)]);
+        }
+
+        condition ??= new Literal(true);
+
+        body = new While(condition, body);
+
+        if (initializer != null) {
+            body = new Block([initializer, body]);
+        }
+
+        return body;
+    }
+
+    private Stmt WhileStatement() {
+        Consume(TokenType.LEFT_PAREN, "expect '(' after 'while'");
+        var condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "expect ')' after 'while' condition");
+        var body = Statement();
+
+        return new While(condition, body);
+    }
+
+    private Stmt IfStatement() {
+        Consume(TokenType.LEFT_PAREN, "expect '(' after 'if'");
+        var condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "expect ')' after 'if' condition");
+
+        var thenBranch = Statement();
+        Stmt elseBranch = null;
+        if (Match(TokenType.ELSE)) {
+            elseBranch = Statement();
+        }
+
+        return new If(condition, thenBranch, elseBranch);
     }
 
     private List<Stmt> Block() {
@@ -93,7 +170,7 @@ public class Parser(IReadOnlyList<Token> tokens) {
     }
 
     private Expr Assignment() {
-        var expr = TernaryCond();
+        var expr = Or();
 
         if (Match(TokenType.EQUAL)) {
             var equals = Previous();
@@ -105,6 +182,30 @@ public class Parser(IReadOnlyList<Token> tokens) {
             }
 
             Error(equals, "invalid assignment target");
+        }
+
+        return expr;
+    }
+
+    private Expr Or() {
+        var expr = And();
+
+        while (Match(TokenType.OR)) {
+            var op = Previous();
+            var right = And();
+            expr = new Logical(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    private Expr And() {
+        var expr = TernaryCond();
+
+        while (Match(TokenType.AND)) {
+            var op = Previous();
+            var right = TernaryCond();
+            expr = new Logical(expr, op, right);
         }
 
         return expr;

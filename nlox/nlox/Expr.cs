@@ -8,6 +8,7 @@ public interface ExprVisitor<R> {
     R VisitUnaryExpr(Unary expr);
     R VisitTernaryCondExpr(TernaryCond expr);
     R VisitVariableExpr(Variable expr);
+    R VisitLogicalExpr(Logical expr);
 }
 public abstract record Expr {
     public abstract R Accept<R>(ExprVisitor<R> visitor);
@@ -45,5 +46,10 @@ public sealed record TernaryCond(Expr Condition, Expr IfTrue, Expr IfFalse) : Ex
 public sealed record Variable(Token Name) : Expr {
     public override R Accept<R>(ExprVisitor<R> visitor) {
         return visitor.VisitVariableExpr(this);
+    }
+}
+public sealed record Logical(Expr Left, Token Operator, Expr Right) : Expr {
+    public override R Accept<R>(ExprVisitor<R> visitor) {
+        return visitor.VisitLogicalExpr(this);
     }
 }

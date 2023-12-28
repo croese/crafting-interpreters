@@ -12,13 +12,16 @@ DefineAst(outputDir, true, "Expr",
     "Literal : object? Value",
     "Unary : Token Operator, Expr Right",
     "TernaryCond : Expr Condition, Expr IfTrue, Expr IfFalse",
-    "Variable : Token Name");
+    "Variable : Token Name",
+    "Logical : Expr Left, Token Operator, Expr Right");
 
 DefineAst(outputDir, false, "Stmt",
     "Block : List<Stmt> Statements",
     "Expression : Expr Value",
     "Print : Expr Value",
-    "Var : Token Name, Expr? Initializer");
+    "Var : Token Name, Expr? Initializer",
+    "If : Expr Condition, Stmt ThenBranch, Stmt? ElseBranch",
+    "While : Expr Condition, Stmt Body");
 
 void DefineAst(string outputDir, bool isVisitorGeneric, string baseName, params string[] types) {
     var path = Path.Combine(outputDir, $"{baseName}.cs");

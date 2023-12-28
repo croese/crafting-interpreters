@@ -5,6 +5,8 @@ public interface StmtVisitor {
     void VisitExpressionStmt(Expression stmt);
     void VisitPrintStmt(Print stmt);
     void VisitVarStmt(Var stmt);
+    void VisitIfStmt(If stmt);
+    void VisitWhileStmt(While stmt);
 }
 public abstract record Stmt {
     public abstract void Accept(StmtVisitor visitor);
@@ -27,5 +29,15 @@ public sealed record Print(Expr Value) : Stmt {
 public sealed record Var(Token Name, Expr? Initializer) : Stmt {
     public override void Accept(StmtVisitor visitor) {
         visitor.VisitVarStmt(this);
+    }
+}
+public sealed record If(Expr Condition, Stmt ThenBranch, Stmt? ElseBranch) : Stmt {
+    public override void Accept(StmtVisitor visitor) {
+        visitor.VisitIfStmt(this);
+    }
+}
+public sealed record While(Expr Condition, Stmt Body) : Stmt {
+    public override void Accept(StmtVisitor visitor) {
+        visitor.VisitWhileStmt(this);
     }
 }

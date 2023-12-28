@@ -90,6 +90,22 @@ public class Interpreter : ExprVisitor<object?>, StmtVisitor {
         return _environment.Get(expr.Name);
     }
 
+    public object? VisitLogicalExpr(Logical expr) {
+        var left = Evaluate(expr.Left);
+
+        if (expr.Operator.Type == TokenType.OR) {
+            if (IsTruthy(left)) {
+                return left;
+            }
+        } else {
+            if (!IsTruthy(left)) {
+                return left;
+            }
+        }
+
+        return Evaluate(expr.Right);
+    }
+
     public void VisitBlockStmt(Block stmt) {
         ExecuteBlock(stmt.Statements, new Environment(_environment));
     }
@@ -110,6 +126,20 @@ public class Interpreter : ExprVisitor<object?>, StmtVisitor {
         }
 
         _environment.Define(stmt.Name.Lexeme, value);
+    }
+
+    public void VisitIfStmt(If stmt) {
+        if (IsTruthy(Evaluate(stmt.Condition))) {
+            Execute(stmt.ThenBranch);
+        } else if (stmt.ElseBranch != null) {
+            Execute(stmt.ElseBranch);
+        }
+    }
+
+    public void VisitWhileStmt(While stmt) {
+        while (IsTruthy(Evaluate(stmt.Condition))) {
+            Execute(stmt.Body);
+        }
     }
 
     private void ExecuteBlock(List<Stmt> statements,
