@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,dotnetcore,csharp,macos,rider
-# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,dotnetcore,csharp,macos,rider
+# Created by https://www.toptal.com/developers/gitignore/api/macos,rider,visualstudiocode,csharp
+# Edit at https://www.toptal.com/developers/gitignore?templates=macos,rider,visualstudiocode,csharp
 
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and
@@ -399,15 +399,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-### DotnetCore ###
-# .NET Core build folders
-bin/
-obj/
-
-# Common node modules locations
-/node_modules
-/wwwroot/node_modules
-
 ### macOS ###
 # General
 .DS_Store
@@ -533,4 +524,4 @@ fabric.properties
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,dotnetcore,csharp,macos,rider
+# End of https://www.toptal.com/developers/gitignore/api/macos,rider,visualstudiocode,csharp
