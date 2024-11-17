@@ -16,7 +16,7 @@ public class ScannerTest
         var source = """
                      // this is a comment
                      (( )) {} // grouping stuff
-                     !*+-,.;/=<> <= >= == != // operators
+                     !*+-,.;/=<> <= >= == != : ? // operators
                      "this is a string" 123.5 42
                      and class else false for fun if nil
                      or print return super this true var while
@@ -48,6 +48,8 @@ public class ScannerTest
             new(TokenType.GREATER_EQUAL, ">=", null, 3),
             new(TokenType.EQUAL_EQUAL, "==", null, 3),
             new(TokenType.BANG_EQUAL, "!=", null, 3),
+            new(TokenType.COLON, ":", null, 3),
+            new(TokenType.QUESTION, "?", null, 3),
             new(TokenType.STRING, "\"this is a string\"", "this is a string", 4),
             new(TokenType.NUMBER, "123.5", 123.5, 4),
             new(TokenType.NUMBER, "42", (double)42, 4),

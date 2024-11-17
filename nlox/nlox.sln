@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLox", "NLox\NLox.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLox.Tests", "NLox.Tests\NLox.Tests.csproj", "{3A4F12FE-A597-490F-A132-309EC2E3DD08}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLox.Tool", "NLox.Tool\NLox.Tool.csproj", "{183139EB-DD73-423A-BED8-259191C91BC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{3A4F12FE-A597-490F-A132-309EC2E3DD08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A4F12FE-A597-490F-A132-309EC2E3DD08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A4F12FE-A597-490F-A132-309EC2E3DD08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{183139EB-DD73-423A-BED8-259191C91BC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{183139EB-DD73-423A-BED8-259191C91BC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{183139EB-DD73-423A-BED8-259191C91BC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{183139EB-DD73-423A-BED8-259191C91BC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

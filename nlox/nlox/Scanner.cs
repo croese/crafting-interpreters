@@ -80,6 +80,12 @@ public class Scanner
             case '*':
                 AddToken(TokenType.STAR);
                 break;
+            case '?':
+                AddToken(TokenType.QUESTION);
+                break;
+            case ':':
+                AddToken(TokenType.COLON);
+                break;
             case '!':
                 AddToken(Match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
                 break;
