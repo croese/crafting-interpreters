@@ -3,6 +3,7 @@ namespace NLox;
 public class Parser
 {
     private readonly List<Token> _tokens;
+    private bool _breakAllowed;
     private int _current;
 
     public Parser(List<Token> tokens)
@@ -10,16 +11,150 @@ public class Parser
         _tokens = tokens;
     }
 
-    public Expr? Parse()
+    public List<Stmt> Parse()
+    {
+        var statements = new List<Stmt>();
+        while (!IsAtEnd())
+        {
+            var decl = Declaration();
+            if (decl != null) statements.Add(decl);
+        }
+
+        return statements;
+    }
+
+    private Stmt? Declaration()
     {
         try
         {
-            return Expression();
+            if (Match(TokenType.VAR)) return VarDeclaration();
+
+            return Statement();
         }
-        catch (ParseError error)
+        catch (ParseError e)
         {
+            Synchronize();
             return null;
         }
+    }
+
+    private Stmt VarDeclaration()
+    {
+        var name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+        Expr? initializer = null;
+        if (Match(TokenType.EQUAL)) initializer = Expression();
+
+        Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, initializer);
+    }
+
+    private Stmt Statement()
+    {
+        if (Match(TokenType.BREAK)) return BreakStatement();
+        if (Match(TokenType.FOR)) return ForStatement();
+        if (Match(TokenType.IF)) return IfStatement();
+        if (Match(TokenType.PRINT)) return PrintStatement();
+        if (Match(TokenType.WHILE)) return WhileStatement();
+        if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
+
+        return ExpressionStatement();
+    }
+
+    private Stmt BreakStatement()
+    {
+        if (!_breakAllowed) throw Error(Previous(), "'break' is only allowed in loop bodies.");
+        Consume(TokenType.SEMICOLON, "Expect ';' after 'break'.");
+        return new Stmt.Break();
+    }
+
+    private Stmt ForStatement()
+    {
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+
+        Stmt? initializer;
+        if (Match(TokenType.SEMICOLON))
+            initializer = null;
+        else if (Match(TokenType.VAR))
+            initializer = VarDeclaration();
+        else
+            initializer = ExpressionStatement();
+
+        Expr? condition = null;
+        if (!Check(TokenType.SEMICOLON)) condition = Expression();
+        Consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+
+        Expr? increment = null;
+        if (!Check(TokenType.RIGHT_PAREN)) increment = Expression();
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        _breakAllowed = true;
+        var body = Statement();
+        _breakAllowed = false;
+
+        if (increment != null)
+            body = new Stmt.Block([body, new Stmt.Expression(increment)]);
+
+        condition ??= new Expr.Literal(true);
+        body = new Stmt.While(condition, body);
+
+        if (initializer != null) body = new Stmt.Block([initializer, body]);
+
+        return body;
+    }
+
+    private Stmt WhileStatement()
+    {
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+        var condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+
+        _breakAllowed = true;
+        var body = Statement();
+        _breakAllowed = false;
+
+        return new Stmt.While(condition, body);
+    }
+
+    private Stmt IfStatement()
+    {
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+        var condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
+
+        var thenBranch = Statement();
+        Stmt? elseBranch = null;
+        if (Match(TokenType.ELSE)) elseBranch = Statement();
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+    private List<Stmt> Block()
+    {
+        var statements = new List<Stmt>();
+
+        while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+        {
+            var decl = Declaration();
+            if (decl != null) statements.Add(decl);
+        }
+
+        Consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
+
+    private Stmt ExpressionStatement()
+    {
+        var expression = Expression();
+        Consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expression);
+    }
+
+    private Stmt PrintStatement()
+    {
+        var value = Expression();
+        Consume(TokenType.SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
     }
 
     private Expr Expression()
@@ -29,13 +164,62 @@ public class Parser
 
     private Expr Comma()
     {
-        var expr = Conditional();
+        var expr = Assignment();
 
         while (Match(TokenType.COMMA))
         {
             var comma = Previous();
-            var right = Conditional();
+            var right = Assignment();
             expr = new Expr.Binary(expr, comma, right);
+        }
+
+        return expr;
+    }
+
+    private Expr Assignment()
+    {
+        var expr = Conditional();
+
+        if (Match(TokenType.EQUAL))
+        {
+            var equals = Previous();
+            var value = Assignment();
+
+            if (expr is Expr.Variable variable)
+            {
+                var name = variable.Name;
+                return new Expr.Assign(name, value);
+            }
+
+            Error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    private Expr Or()
+    {
+        var expr = And();
+
+        while (Match(TokenType.OR))
+        {
+            var op = Previous();
+            var right = And();
+            expr = new Expr.Logical(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    private Expr And()
+    {
+        var expr = Equality();
+
+        while (Match(TokenType.AND))
+        {
+            var op = Previous();
+            var right = Equality();
+            expr = new Expr.Logical(expr, op, right);
         }
 
         return expr;
@@ -43,7 +227,7 @@ public class Parser
 
     private Expr Conditional()
     {
-        var expr = Equality();
+        var expr = Or();
 
         if (Match(TokenType.QUESTION))
         {
@@ -166,6 +350,8 @@ public class Parser
         if (Match(TokenType.NIL)) return new Expr.Literal(null);
 
         if (Match(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(Previous().Literal);
+
+        if (Match(TokenType.IDENTIFIER)) return new Expr.Variable(Previous());
 
         if (Match(TokenType.LEFT_PAREN))
         {

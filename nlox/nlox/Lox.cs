@@ -2,7 +2,10 @@ namespace NLox;
 
 public class Lox
 {
+    private static readonly Interpreter Interpreter = new();
     public static bool HadError { get; set; }
+
+    public static bool HadRuntimeError { get; set; }
 
     public static void Main(string[] args)
     {
@@ -10,7 +13,7 @@ public class Lox
         {
             case > 1:
                 Console.WriteLine("Usage: nlox [script]");
-                Environment.Exit(64);
+                System.Environment.Exit(64);
                 break;
             case 1:
                 RunFile(args[0]);
@@ -37,6 +40,9 @@ public class Lox
     {
         var script = File.ReadAllText(path);
         Run(script);
+
+        if (HadError) System.Environment.Exit(65);
+        if (HadRuntimeError) System.Environment.Exit(70);
     }
 
     private static void Run(string source)
@@ -44,11 +50,11 @@ public class Lox
         var scanner = new Scanner(source);
         var tokens = scanner.ScanTokens();
         var parser = new Parser(tokens);
-        var expression = parser.Parse();
+        var statements = parser.Parse();
 
         if (HadError) return;
 
-        Console.WriteLine(new AstPrinter().Print(expression!));
+        Interpreter.Interpret(statements);
     }
 
     public static void Error(int line, string message)
@@ -65,5 +71,11 @@ public class Lox
     {
         Console.Error.WriteLine($"[line {line}] Error{where}: {message}");
         HadError = true;
+    }
+
+    public static void RuntimeError(RuntimeError error)
+    {
+        Console.Error.WriteLine($"{error.Message}\n[line {error.Token.Line}]");
+        HadRuntimeError = true;
     }
 }

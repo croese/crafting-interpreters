@@ -19,7 +19,7 @@ public class ScannerTest
                      !*+-,.;/=<> <= >= == != : ? // operators
                      "this is a string" 123.5 42
                      and class else false for fun if nil
-                     or print return super this true var while
+                     or print return super this true var while break
                      foo bar
                      /*
                       block comment
@@ -69,6 +69,7 @@ public class ScannerTest
             new(TokenType.TRUE, "true", null, 6),
             new(TokenType.VAR, "var", null, 6),
             new(TokenType.WHILE, "while", null, 6),
+            new(TokenType.BREAK, "break", null, 6),
             new(TokenType.IDENTIFIER, "foo", null, 7),
             new(TokenType.IDENTIFIER, "bar", null, 7),
             new(TokenType.EOF, "", null, 10)

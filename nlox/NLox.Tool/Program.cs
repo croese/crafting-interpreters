@@ -5,14 +5,26 @@
 }
 
 var outputDir = args[0];
-DefineAst(outputDir, "Expr",
+DefineAst(outputDir, true, "Expr",
     "Binary : Expr Left, Token Operator, Expr Right",
     "Grouping : Expr Expression",
     "Literal  : object? Value",
+    "Logical : Expr Left, Token Op, Expr Right",
     "Unary    : Token Operator, Expr Right",
-    "Conditional  : Expr Condition, Expr IfTrue, Expr IfFalse");
+    "Conditional  : Expr Condition, Expr IfTrue, Expr IfFalse",
+    "Variable : Token Name",
+    "Assign : Token Name, Expr Value");
 
-void DefineAst(string outputDir, string baseName, params string[] types)
+DefineAst(outputDir, false, "Stmt",
+    "Expression : Expr Value",
+    "If : Expr Condition, Stmt ThenBranch, Stmt? ElseBranch",
+    "Print : Expr Value",
+    "Var : Token Name, Expr? Initializer",
+    "Block : List<Stmt> Statements",
+    "While : Expr Condition, Stmt Body",
+    "Break : ");
+
+void DefineAst(string outputDir, bool isVisitorGeneric, string baseName, params string[] types)
 {
     var path = Path.Join(outputDir, baseName + ".cs");
     using var writer = File.CreateText(path);
@@ -20,40 +32,48 @@ void DefineAst(string outputDir, string baseName, params string[] types)
     writer.WriteLine();
     writer.WriteLine($"public abstract record {baseName} {{");
 
-    DefineVisitor(writer, baseName, types);
+    DefineVisitor(writer, isVisitorGeneric, baseName, types);
 
     foreach (var type in types)
     {
         var className = type.Split(":")[0].Trim();
         var fields = type.Split(":")[1].Trim();
-        DefineType(writer, baseName, className, fields);
+        DefineType(writer, isVisitorGeneric, baseName, className, fields);
     }
 
     writer.WriteLine();
-    writer.WriteLine("  public abstract R Accept<R>(Visitor<R> visitor);");
+    writer.WriteLine(isVisitorGeneric
+        ? "  public abstract R Accept<R>(Visitor<R> visitor);"
+        : "  public abstract void Accept(Visitor visitor);");
 
     writer.WriteLine("}");
 }
 
-void DefineType(StreamWriter writer, string baseName, string className, string fields)
+void DefineType(StreamWriter writer, bool isVisitorGeneric, string baseName, string className, string fields)
 {
     writer.WriteLine($"  public record {className}({fields}) : {baseName} {{");
 
-    writer.WriteLine("    public override R Accept<R>(Visitor<R> visitor) {");
-    writer.WriteLine($"      return visitor.Visit{className}{baseName}(this);");
+    writer.WriteLine(isVisitorGeneric
+        ? "    public override R Accept<R>(Visitor<R> visitor) {"
+        : "    public override void Accept(Visitor visitor) {");
+    writer.WriteLine(isVisitorGeneric
+        ? $"      return visitor.Visit{className}{baseName}(this);"
+        : $"      visitor.Visit{className}{baseName}(this);");
     writer.WriteLine("    }");
 
     writer.WriteLine("  }");
 }
 
-void DefineVisitor(StreamWriter writer, string baseName, string[] types)
+void DefineVisitor(StreamWriter writer, bool isGeneric, string baseName, string[] types)
 {
-    writer.WriteLine("  public interface Visitor<R> {");
+    writer.WriteLine(isGeneric ? "  public interface Visitor<R> {" : "  public interface Visitor {");
 
     foreach (var type in types)
     {
         var typeName = type.Split(":")[0].Trim();
-        writer.WriteLine($"    R Visit{typeName}{baseName}({typeName} {baseName.ToLower()});");
+        writer.WriteLine(isGeneric
+            ? $"    R Visit{typeName}{baseName}({typeName} {baseName.ToLower()});"
+            : $"    void Visit{typeName}{baseName}({typeName} {baseName.ToLower()});");
     }
 
     writer.WriteLine("  }");
